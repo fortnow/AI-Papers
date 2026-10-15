@@ -91,9 +91,9 @@ elementary and is presented with full proofs. The second half (estimating that
 reward with $O(\log n)$ shared random bits, then enumerating them, all in
 $O(\log n)$ space) is a long chain of interlocking devices; for each one this
 note explains what problem it solves, states what is proved, and points to the
-manuscript. Unlike the Unique Games result in the same release, this one has no
-Lean formalization. \Cref{sec:reader} says what was checked here and where a
-referee should concentrate.
+manuscript. A Lean formalization of the class equality was added to the
+repository on October 7, 2026. \Cref{sec:reader} says what was checked here and
+where a referee should concentrate.
 \end{abstract}
 
 {\small\setlength{\parskip}{0pt}\tableofcontents}
@@ -258,11 +258,15 @@ arithmetic) exists to make this one accounting rule true.
 
 The manuscript is 108 pages. Its first half is the hierarchy and the statistical
 estimator; its second half is the implementation (numerical streams and the
-controller), the conclusion and the compiler. The repository's index lists no
-Lean formalization for this result, so, unlike the Unique Games proof in the same
-release, it rests on the written argument alone. The README notes that
-unformalized results ``could have issues.'' Given the claim, this paper deserves
-an expert referee; \cref{sec:reader} suggests where to start.
+controller), the conclusion and the compiler. When this note was first written,
+the repository listed no Lean formalization for this result. An update on
+October 7, 2026 added one: the Comparator challenge
+\texttt{LogspaceEquality.lean}, which states $\Lc=\RL=\BPL$ for an explicit
+Turing-machine model and permits only Lean's standard axioms. It does not
+separately state the compiler or its explicit bounds. I have not run the
+check. If it passes, the remaining question is whether the formal model and
+statement match the paper's. Given the claim, the written argument still
+deserves an expert referee; \cref{sec:reader} suggests where to start.
 
 \section{The exact target: the correction and copy hierarchy}\label{sec:hierarchy}
 
@@ -833,8 +837,10 @@ reward identity, the row-sum bound, the factorial truncation argument, the
 active-vertex count) and the final enumeration and median argument, and found
 them correct. For \cref{sec:estimator,sec:space} I read the manuscript's
 statements and arguments and have tried to report them faithfully, but those
-sections are long and intricate, and I did not check them line by line. There is
-no Lean formalization of this result in the repository.
+sections are long and intricate, and I did not check them line by line. A
+separate referee report on Section~11 was prepared later. Since October 7, 2026
+the repository has also included a Lean formalization of $\Lc=\RL=\BPL$
+(\texttt{LogspaceEquality.lean}), which I have not run.
 
 \subsection{Where to look hardest}
 
