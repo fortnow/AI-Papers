@@ -20,9 +20,9 @@ Each `.tex` file is self-contained and compiles with `pdflatex`.
 
 ## Commentary
 
-| Document | PDF | Markdown |
+| Document | PDF | LaTeX source |
 |---|---|---|
-| Mathematicians React to OpenAI's October 6, 2026 Math Release | [PDF](mathematician-reactions-oct6-release.pdf) | [md](mathematician-reactions-oct6-release.md) |
+| Mathematicians React to OpenAI's October 6, 2026 Math Release | [PDF](mathematician-reactions-oct6-release.pdf) | [tex](mathematician-reactions-oct6-release.tex) |
 
 A review, with links, of how mathematicians and theoretical computer
 scientists responded to the October 6 release, prepared with Claude for
