@@ -17,3 +17,13 @@ results have Lean formalizations in the original repository (for L = RL = BPL,
 one was added on October 7, 2026). These rewrites did not run those checks.
 
 Each `.tex` file is self-contained and compiles with `pdflatex`.
+
+## Commentary
+
+| Document | PDF | Markdown |
+|---|---|---|
+| Mathematicians React to OpenAI's October 6, 2026 Math Release | [PDF](mathematician-reactions-oct6-release.pdf) | [md](mathematician-reactions-oct6-release.md) |
+
+A review, with links, of how mathematicians and theoretical computer
+scientists responded to the October 6 release, prepared with Claude for
+Lance Fortnow (October 18, 2026).
