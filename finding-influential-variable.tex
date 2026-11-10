@@ -1,0 +1,353 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Inf}{\mathrm{Inf}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\polylog}{\mathrm{polylog}}
+\newcommand{\PromiseBQP}{\mathsf{PromiseBQP}}
+\newcommand{\PromiseBPP}{\mathsf{PromiseBPP}}
+
+\title{On the Complexity of Finding an Influential Variable}
+\author{Lance Fortnow}
+\date{November 10, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Aaronson--Ambainis conjecture, now a theorem, says every bounded degree-$d$ polynomial
+$p:\{0,1\}^n\to[0,1]$ has a variable of influence $\poly(\Var(p)/d)$. The proof is
+existential. We ask how hard it is to \emph{find} such a variable. When $p$ is given as
+the acceptance probability of a quantum circuit, the search problem is
+$\PromiseBQP$-complete: easy for a quantum computer and $\PromiseBQP$-hard even for
+degree-one polynomials. When $p$ is given as a black box, a variable of influence
+$\poly(\Var(p)/d)$ can be found with $\poly(d/\Var(p))\cdot\log n\log\log n$ queries, and
+$\Omega(\log n)$ queries are necessary. All of the difficulty lies in evaluating $p$,
+not in the search.
+\end{abstract}
+
+\section{Background}
+
+Write $p(x)=\sum_{U\subseteq[n]}\hat p(U)\chi_U(x)$ in the $\pm1$ Fourier basis, so that
+\[
+\Inf_i(p)=\sum_{U\ni i}\hat p(U)^2=\tfrac14\,\E_x\big[(p(x)-p(x^{\oplus i}))^2\big],
+\qquad
+\Var(p)=\sum_{U\neq\emptyset}\hat p(U)^2 .
+\]
+
+Aaronson and Ambainis~\cite{AA14} conjectured that every polynomial
+$p:\{0,1\}^n\to[0,1]$ of degree~$d$ satisfies
+\[
+\max_i\Inf_i(p)\ge\poly(\Var(p)/d).
+\]
+Turturean~\cite{Tur26} recently proved this. Blanc, Docter, Strassle, and
+Tan~\cite{BDST-exp} give an exposition that obtains the bound
+$\Omega(\Var(p)^8/d^{12})$; the original proof gives $\Omega(\Var(p)^{5/2}/d^6)$.
+
+The motivation is the simulation of quantum query algorithms. By Beals et
+al.~\cite{BBCMW01}, the acceptance probability of a $t$-query quantum algorithm is a
+polynomial of degree at most $2t$ in the input bits. A classical simulator can query the
+most influential variable, restrict, and recurse until the polynomial is nearly
+constant. The influence bound controls the number of \emph{queries} this simulator
+makes. The exposition does not discuss the cost of \emph{finding} the influential
+variable. That cost appears only implicitly, through the complexity-class consequences:
+Aaronson and Ambainis note that a random-oracle separation of $\mathsf{BQP}$ from
+$\mathsf{HeurP}$ would require $\mathsf{P}\neq\mathsf{P}^{\#\mathsf{P}}$, and Blanc,
+Docter, Strassle, and Tan~\cite{BDST26} strengthen this to
+$\PromiseBPP\neq\PromiseBQP$. This bears on the question of Fortnow and
+Rogers~\cite{FR99} of whether $\mathsf{BPP}\neq\mathsf{BQP}$ relative to a random oracle.
+
+We consider two ways $p$ might be presented.
+
+\section{When \texorpdfstring{$p$}{p} is given by a quantum circuit}
+
+Suppose we are given a quantum circuit $Q$ that makes queries to an input
+$x\in\{0,1\}^n$, and let $p(x)=\Pr[Q^x\text{ accepts}]$.
+
+\begin{theorem}[Upper bound]\label{thm:circuit-upper}
+There is a quantum algorithm that, given $Q$ and $\varepsilon>0$, runs in time
+$\poly(|Q|,n,1/\varepsilon)$ and with high probability outputs $i$ with
+$\Inf_i(p)\ge\max_j\Inf_j(p)-\varepsilon$.
+\end{theorem}
+
+\begin{proof}
+Since $x^{\oplus i}$ is uniform when $x$ is,
+\[
+\Inf_i(p)=\tfrac12\Big(\E_x\big[p(x)^2\big]-\E_x\big[p(x)\,p(x^{\oplus i})\big]\Big).
+\]
+Running $Q$ twice independently on the same $x$, both runs accept with probability
+$p(x)^2$; running it on $x$ and on $x^{\oplus i}$, both accept with probability
+$p(x)p(x^{\oplus i})$. So each term is the acceptance probability of a small quantum
+circuit and can be estimated to additive $\varepsilon/4$ with $O(\varepsilon^{-2}\log n)$
+runs. Estimate all $n$ influences and output the largest.
+\end{proof}
+
+$\Var(p)$ can be estimated the same way, and restricting a variable amounts to hardwiring
+it into $Q$. Hence every step of the Aaronson--Ambainis simulator, including the test of
+whether $p$ is close to constant, is a $\PromiseBQP$ computation.
+
+\begin{theorem}[Lower bound]\label{thm:circuit-lower}
+Let $0<c<1/4$ be a constant. Finding a variable of influence at least $c$, given a quantum
+circuit computing a degree-$1$ polynomial on two variables with $\Var(p)\ge1/8$, is
+$\PromiseBQP$-hard.
+\end{theorem}
+
+\begin{proof}
+Let $C$ be a $\PromiseBQP$ circuit, amplified so that its acceptance probability $r$
+satisfies $r\ge1-2^{-k}$ or $r\le2^{-k}$, with $k$ large enough that $2^{-2k}/4<c\le(1-2^{-k})^2/4$.
+Let $Q^x$ run $C$ and output $x_1$ if $C$ accepts and $x_2$ otherwise. Then
+$p(x)=r\,x_1+(1-r)\,x_2$, which has degree~$1$,
+\[
+\Inf_1(p)=\tfrac{r^2}{4},\qquad \Inf_2(p)=\tfrac{(1-r)^2}{4},\qquad
+\Var(p)=\tfrac{r^2+(1-r)^2}{4}\ge\tfrac18 .
+\]
+In the yes case only $x_1$ has influence at least $c$; in the no case only $x_2$ does.
+The variable returned decides $C$.
+\end{proof}
+
+Since $d=1$ and $\Var(p)\ge1/8$, the target $\poly(\Var(p)/d)$ in the
+Aaronson--Ambainis bound is a constant, so Theorem~\ref{thm:circuit-lower} applies to
+exactly the guarantee the simulator needs. Finding the \emph{most} influential variable
+is hard by the same reduction.
+
+\begin{remark}
+The circuit $C$ in the reduction never looks at $x$; the hardness is an unrelativized
+$\mathsf{BQP}$ computation planted inside the polynomial. This is the ``easy direction''
+(an unrelativized separation gives a random-oracle separation) in miniature, and the
+Aaronson--Ambainis theorem says it is the only obstacle: with a $\PromiseBQP$ oracle the
+classical simulator runs in polynomial time. The worst-case question is therefore
+settled. What remains open is whether finding becomes easier when hardness cannot be
+planted, for instance for circuits whose non-query gates are Clifford or of constant
+depth, or on average over natural distributions of circuits. The existence proof gives
+no guidance, since none of its steps is constructive.
+\end{remark}
+
+\section{When \texorpdfstring{$p$}{p} is given as a black box}
+
+Now suppose we may query $p(x)$ for any $x$ we choose. Everything below also works in the
+weaker model where a query returns a coin of bias $p(x)$, provided the same point can be
+queried twice.
+
+\begin{theorem}\label{thm:blackbox}
+Let $\tau=\poly(\Var(p)/d)$ be the Aaronson--Ambainis bound. There is a randomized
+algorithm that, with
+$O\big(d\,\Var(p)\,\tau^{-3}\log n\cdot\log(d\log n/\tau)\big)=\poly(d/\Var(p))\cdot
+\log n\cdot\log\log n$ queries to $p$, outputs with high probability a variable $i$ with
+$\Inf_i(p)\ge\tau/2$. Conversely, $\Omega(\log n)$ queries are necessary.
+\end{theorem}
+
+The lower bound is immediate: for $p=x_i$ with $i$ hidden, each query returns one bit
+and $i$ is the only influential variable, so $\log_2 n$ queries are needed.
+
+For the upper bound we use the influence of a set of variables, as in junta
+testing~\cite{FKRSS04,Blais09},
+\[
+\Inf_S(p)=\sum_{U\cap S\neq\emptyset}\hat p(U)^2=\tfrac12\,\E\big[(p(x)-p(y))^2\big],
+\]
+where $x$ is uniform and $y$ is $x$ with the coordinates in $S$ rerandomized. Two
+properties matter. It is monotone, so $\Inf_S(p)\ge\Inf_i(p)$ whenever $i\in S$. And
+it is dominated by the influence mass $W(S)=\sum_{i\in S}\Inf_i(p)=\sum_U|U\cap
+S|\,\hat p(U)^2$, which is additive over disjoint sets and, because $p$ has degree $d$,
+has total
+\[
+W([n])=\sum_U|U|\,\hat p(U)^2\le d\cdot\Var(p).
+\]
+Since $(p(x)-p(y))^2\in[0,1]$, $\Inf_S(p)$ can be estimated to additive $\varepsilon$ with
+confidence $1-\gamma$ using $O(\varepsilon^{-2}\log(1/\gamma))$ queries, independent of
+$|S|$. With coin access, write $\Inf_S(p)=\E[p(x)^2]-\E[p(x)p(y)]$ and estimate each
+term from pairs of independent coins.
+
+\begin{proof}[Proof of Theorem~\ref{thm:blackbox}]
+Run the branch-and-prune search of Goldreich--Levin~\cite{GL89} and
+Kushilevitz--Mansour~\cite{KM93}. Start with the active list $\{[n]\}$. At each of
+$\lceil\log_2 n\rceil$ levels, split every active set in half, estimate $\Inf_S(p)$ for
+each half to additive $\tau/4$, and keep the halves whose estimate exceeds $\tau/2$. At
+the end, output any surviving singleton.
+
+Assume all estimates are accurate. If $\Inf_{i^*}(p)\ge\tau$, every set containing
+$i^*$ has $\Inf_S(p)\ge\tau$ by monotonicity and survives, so $\{i^*\}$ is reached. Every
+surviving set has $\Inf_S(p)>\tau/4$, and in particular every surviving singleton has
+influence above $\tau/4$; re-estimating the survivors to additive $\tau/8$ and outputting
+the best one gives influence at least $\tau/2$. The active sets at a level are disjoint,
+so their number is at most
+\[
+\frac{\sum_S \Inf_S(p)}{\tau/4}\le\frac{\sum_S W(S)}{\tau/4}\le\frac{4d\,\Var(p)}{\tau}.
+\]
+That gives $O(d\,\Var(p)\,\tau^{-1}\log n)$ estimates, each with
+$O(\tau^{-2}\log(d\log n/\tau))$ queries to make a union bound work. (The algorithm needs
+$d$ and a lower bound on $\Var(p)$ to set $\tau$; the variance can itself be estimated
+with $\poly(1/\Var(p))$ queries.)
+\end{proof}
+
+The degree bound is used only to bound the total mass $W([n])$, and hence the width of
+the search. This is the same argument Blanc, Docter, Strassle, and Tan~\cite[Prop.~10.6]{BDST26}
+use to find a variable of large \emph{query weight}, with sums of query weights in
+place of set influences.
+
+\begin{remark}[Influences relative to a random oracle]
+In~\cite{BDST26} the authors remark that the Aaronson--Ambainis subroutine for finding
+a variable of high influence is in $\mathsf{NP}^{\#\mathsf{P}}$, whereas their
+subroutine for query weights is in $\PromiseBQP$, and they cite this as an algorithmic
+advantage of query weights. Combining the two-copy estimator in the proof of
+Theorem~\ref{thm:circuit-upper} with the search above appears to put the influence
+version in $\PromiseBQP$ as well. When the input is a random oracle
+$O\in\{0,1\}^N$ and $Q$ makes $t$ queries, $\Inf_S$ for a dyadic interval $S$ is
+$\E[p(O)^2]-\E[p(O)p(O')]$, a difference of average acceptance probabilities of
+two-copy circuits. The random oracles $O$ and $O'$ can be simulated with
+$2t$-wise independent functions~\cite{Zha12}, and the search needs only
+$\poly(t)\cdot\log N$ such estimates. So the Aaronson--Ambainis regularity lemma also appears
+to be algorithmic under $\PromiseBPP=\PromiseBQP$. If correct, the advantage of query
+weights lies in their easier existence proof, not in their algorithmic tractability.
+\end{remark}
+
+\section{Related work}
+
+Aaronson and Ambainis~\cite{AA14} made their regularity lemma algorithmic under
+$\mathsf{P}=\mathsf{P}^{\#\mathsf{P}}$, finding influential variables by computing
+influences exactly. Blanc, Docter, Strassle, and Tan~\cite{BDST26} replace influences
+by query weights, a property of the algorithm rather than of $p$. They find heavy
+variables with a $\PromiseBQP$ subset-sum estimator and branch-and-prune, which gives
+logarithmic dependence on $N$, and conclude that a random-oracle separation
+$\PromiseBQP^O\not\subseteq\PromiseHeurBPP^O$ would imply
+$\PromiseBPP\neq\PromiseBQP$. None of these works considers hardness of finding.
+
+Set influences and their estimation with $O(\varepsilon^{-2})$ queries, independent
+of $|S|$, go back to Fischer, Kindler, Ron, Safra, and Samorodnitsky~\cite{FKRSS04} and
+Blais~\cite{Blais09} in junta testing. Blais, Canonne, Eden, Levi, and
+Ron~\cite{BCELR18} introduce the influence of a random $\rho$-biased subset of a set,
+the same noise statistic one gets by flipping coordinates of $S$ with small
+probability.
+
+For learning rather than search, Eskenazis and Ivanisvili~\cite{EI22} show that
+bounded degree-$d$ functions can be learned to $L_2$ error $\varepsilon$ from
+$\log(n/\delta)\,\varepsilon^{-d-1}C^{d^{3/2}\sqrt{\log d}}$ uniformly random
+queries, with the $\log n$ dependence optimal. Since $|\sqrt{\Inf_i(h)}-\sqrt{\Inf_i(p)}|\le\|h-p\|_2$,
+this already finds an influential variable nonadaptively with $O(\log n)$ queries, but
+with exponential dependence on $d$; Theorem~\ref{thm:blackbox} trades nonadaptivity
+for polynomial dependence on $d$.
+
+On the quantum side, Fourier sampling via the Bernstein--Vazirani circuit estimates
+the influences of a Boolean function~\cite{FAH13,LY15}: position $i$ of the sample is
+$1$ with probability $\Inf_i(f)$.
+
+\section{Conclusion}
+
+Combining the two settings, searching for an influential variable costs only
+$O(\log n\log\log n)\cdot\poly(d/\Var(p))$ evaluations of $p$, while evaluating $p$ from a
+quantum circuit is $\PromiseBQP$-hard even in the simplest case. The barrier in the
+Blanc--Docter--Strassle--Tan result sits at $\PromiseBPP$ versus $\PromiseBQP$ because
+of evaluation, not search.
+
+\section*{AI disclosure}
+
+This note was produced in a single conversation with Claude Opus~5.5, a large language
+model developed by Anthropic, on November 10, 2026. The author posed the questions: whether
+the Blanc--Docter--Strassle--Tan exposition addresses the complexity of finding an
+influential variable, and how hard that problem is when $p$ is given by a quantum circuit
+and when it is given as a black box. Claude proposed the theorems and proofs in
+Sections~2 and~3, carried out the literature search behind Section~4 (including the
+observation in Remark~5), and wrote the text and \LaTeX. The literature search led to the
+simpler branch-and-prune proof of Theorem~\ref{thm:blackbox}, which replaced a more
+complicated argument in an earlier draft. The arguments have not been independently
+verified, and some bibliographic details were supplied from the model's own knowledge
+rather than checked against the sources.
+
+\begin{thebibliography}{BBCMW01}
+
+\bibitem[AA14]{AA14}
+Scott Aaronson and Andris Ambainis.
+\newblock The need for structure in quantum speedups.
+\newblock {\em Theory of Computing}, 10(6):133--166, 2014.
+
+\bibitem[BBCMW01]{BBCMW01}
+Robert Beals, Harry Buhrman, Richard Cleve, Michele Mosca, and Ronald de Wolf.
+\newblock Quantum lower bounds by polynomials.
+\newblock {\em Journal of the ACM}, 48(4):778--797, 2001.
+
+\bibitem[BCELR18]{BCELR18}
+Eric Blais, Cl\'ement~L. Canonne, Talya Eden, Amit Levi, and Dana Ron.
+\newblock Tolerant junta testing and the connection to submodular optimization and
+  function isomorphism.
+\newblock In {\em Proceedings of the 29th ACM-SIAM Symposium on Discrete Algorithms
+  (SODA)}, 2018. arXiv:1607.03938.
+
+\bibitem[BDST26a]{BDST26}
+Guy Blanc, Jordan Docter, Carmen Strassle, and Li-Yang Tan.
+\newblock Quantum speedups require structure or depth.
+\newblock In {\em Proceedings of the 67th IEEE Symposium on Foundations of Computer
+  Science (FOCS)}, 2026. arXiv:2608.19158.
+
+\bibitem[BDST26b]{BDST-exp}
+Guy Blanc, Jordan Docter, Carmen Strassle, and Li-Yang Tan.
+\newblock Proof of the {Aaronson--Ambainis} conjecture: An exposition.
+\newblock Manuscript, November 2026.
+\newblock \url{https://guyblanc.github.io/AA_Exposition.pdf}.
+
+\bibitem[Bla09]{Blais09}
+Eric Blais.
+\newblock Testing juntas nearly optimally.
+\newblock In {\em Proceedings of the 41st ACM Symposium on Theory of Computing
+  (STOC)}, pages 151--158, 2009.
+
+\bibitem[EI22]{EI22}
+Alexandros Eskenazis and Paata Ivanisvili.
+\newblock Learning low-degree functions from a logarithmic number of random queries.
+\newblock In {\em Proceedings of the 54th ACM Symposium on Theory of Computing
+  (STOC)}, pages 203--207, 2022.
+
+\bibitem[FAH13]{FAH13}
+Dominik~F. Floess, Erika Andersson, and Mark Hillery.
+\newblock Quantum algorithms for testing and learning {Boolean} functions.
+\newblock {\em Mathematical Structures in Computer Science}, 23(2):386--398, 2013.
+
+\bibitem[FKRSS04]{FKRSS04}
+Eldar Fischer, Guy Kindler, Dana Ron, Shmuel Safra, and Alex Samorodnitsky.
+\newblock Testing juntas.
+\newblock {\em Journal of Computer and System Sciences}, 68(4):753--787, 2004.
+
+\bibitem[FR99]{FR99}
+Lance Fortnow and John Rogers.
+\newblock Complexity limitations on quantum computation.
+\newblock {\em Journal of Computer and System Sciences}, 59(2):240--252, 1999.
+
+\bibitem[GL89]{GL89}
+Oded Goldreich and Leonid Levin.
+\newblock A hard-core predicate for all one-way functions.
+\newblock In {\em Proceedings of the 21st ACM Symposium on Theory of Computing}, pages
+  25--32, 1989.
+
+\bibitem[KM93]{KM93}
+Eyal Kushilevitz and Yishay Mansour.
+\newblock Learning decision trees using the {Fourier} spectrum.
+\newblock {\em SIAM Journal on Computing}, 22(6):1331--1348, 1993.
+
+\bibitem[LY15]{LY15}
+Hongwei Li and Li Yang.
+\newblock A quantum algorithm for approximating the influences of {Boolean}
+  functions and its applications.
+\newblock {\em Quantum Information Processing}, 14:1787--1797, 2015.
+
+\bibitem[Tur26]{Tur26}
+David Turturean.
+\newblock A proof of the {Aaronson--Ambainis} conjecture.
+\newblock Manuscript, November 2026.
+\newblock \url{https://psi.inc/research/aaronson-ambainis/}.
+
+\bibitem[Zha12]{Zha12}
+Mark Zhandry.
+\newblock Secure identity-based encryption in the quantum random oracle model.
+\newblock In {\em Advances in Cryptology -- CRYPTO 2012}, pages 758--775, 2012.
+
+\end{thebibliography}
+
+\end{document}

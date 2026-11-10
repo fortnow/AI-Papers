@@ -27,3 +27,17 @@ Each `.tex` file is self-contained and compiles with `pdflatex`.
 A review, with links, of how mathematicians and theoretical computer
 scientists responded to the October 6 release, prepared with Claude for
 Lance Fortnow (October 18, 2026).
+
+## Notes
+
+| Note | PDF | LaTeX source |
+|---|---|---|
+| On the Complexity of Finding an Influential Variable | [PDF](finding-influential-variable.pdf) | [tex](finding-influential-variable.tex) |
+
+A short research note prompted by the recent proof of the Aaronson–Ambainis
+conjecture. It asks how hard it is to find the influential variable whose
+existence the theorem guarantees. Given a quantum circuit, the search problem
+is PromiseBQP-complete; given black-box access to the polynomial, it takes
+poly(d/Var)·log n queries. Prepared with Claude for Lance Fortnow (November 10,
+2026); see the AI disclosure in the note. The arguments have not been
+independently verified.
